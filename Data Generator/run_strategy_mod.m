@@ -41,7 +41,8 @@ for i = 1:iterations
     sim_obj = MarketSimulator(T,s0,model_params);
 
     % Run strategy on environment
-    random_strategy(sim_obj);
+    %random_strategy(sim_obj);
+    parameter_estimation_strategy(sim_obj, mu);
     %example_strategy_1(sim_obj);
     %example_strategy_2(sim_obj);
     
