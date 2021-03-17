@@ -27,7 +27,7 @@ sim_obj = MarketSimulator(T,s0,model_params);
 %sim_obj = simulation_strategy(sim_obj, mu, c, M);
 %sim_obj = parameter_estimation_strategy(sim_obj, mu);
 %sim_obj = mcts(sim_obj, mu, c);
-[sim_obj, mu_t, c_t] = mixed_strategy(sim_obj, mu, c);
+[sim_obj, mu_t, c_t, cov] = mixed_strategy(sim_obj, mu, c);
 
 % Plot simulated price history
 figure(1);
