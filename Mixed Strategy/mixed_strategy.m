@@ -1,7 +1,7 @@
-function [simObj, mu_t, c_t, cov] = mixed_strategy(simObj, mu, c) % mu only given to compare approximation to exact value.
+function [simObj, mu_t, c_t, cov, cor] = mixed_strategy(simObj, mu, c) % mu only given to compare approximation to exact value.
     w_const = ones(simObj.d,1)/simObj.d; % Only really important thing is that it remains constant.
     simObj = simObj.reset(); % reset simulation environment
-    s_w_delta_zero = zeros(simObj.d, simObj.T); %delta s for delta w equals zero
+    %s_w_delta_zero = zeros(simObj.d, simObj.T); %delta s for delta w equals zero
     s_w_delta_nonzero = zeros(simObj.d, simObj.T); %delta s for delta w not equal zero
     w_w_delta_nonzero = zeros(simObj.d, simObj.T); %delta w for delta w not equal zero
     w_zero_counter = ones(simObj.d,1);
@@ -10,6 +10,8 @@ function [simObj, mu_t, c_t, cov] = mixed_strategy(simObj, mu, c) % mu only give
     c_t = zeros(simObj.d, 1);
     cov = zeros(simObj.d, simObj.d);
     cov_counter = zeros(simObj.d, simObj.d);
+    diff_hist = zeros(simObj.d, simObj.T);
+    cor = zeros(simObj.d, simObj.d);
     
     % Simulate.
     for i=1:simObj.T
@@ -32,13 +34,15 @@ function [simObj, mu_t, c_t, cov] = mixed_strategy(simObj, mu, c) % mu only give
             
         % Prepare data by looking at the differences.
         diff = log(simObj.s_cur) - log(simObj.s_hist(:,simObj.t));
+        diff_hist(:,i) = diff;
         
         % Put deltas in different matrices
         for j=1:simObj.d
-            if w_delta(j) == 0
-                s_w_delta_zero(j,w_zero_counter(j)) = diff(j);
-                w_zero_counter(j) = w_zero_counter(j) + 1;
-            else
+            %if w_delta(j) == 0
+            %    s_w_delta_zero(j,w_zero_counter(j)) = diff(j);
+            %    w_zero_counter(j) = w_zero_counter(j) + 1;
+            %else
+            if w_delta(j) ~= 0
                 s_w_delta_nonzero(j,w_nonzero_counter(j)) = diff(j);
                 w_w_delta_nonzero(j,w_nonzero_counter(j)) = w_delta(j);
                 w_nonzero_counter(j) = w_nonzero_counter(j) + 1;
@@ -55,7 +59,7 @@ function [simObj, mu_t, c_t, cov] = mixed_strategy(simObj, mu, c) % mu only give
             end
             if w_zero_counter(j)-1 ~= 0 && w_nonzero_counter(j)-1 ~= 0
                 for k=1:min(w_zero_counter(j)-1, w_nonzero_counter(j)-1)
-                    c_t(j) = c_t(j) + (s_w_delta_zero(j,k)-s_w_delta_nonzero(j,k))/(sign(w_w_delta_nonzero(j,k)*sqrt(abs(w_w_delta_nonzero(j,k)))));
+                    c_t(j) = c_t(j) + (s_w_delta_nonzero(j,k)-mu_t(j,1))/(sign(w_w_delta_nonzero(j,k)*sqrt(abs(w_w_delta_nonzero(j,k)))));
                     %c_t(j) = c_t(j) + (s_w_delta_zero(j,mod(k, w_zero_counter(j)-1)+1)-s_w_delta_nonzero(j,mod(k, w_nonzero_counter(j)-1)+1))/(sign(w_w_delta_nonzero(j,mod(k, w_nonzero_counter(j)-1)+1))*sqrt(abs(w_w_delta_nonzero(j,mod(k, w_nonzero_counter(j)-1)+1))));
                 end
                 c_t(j) = c_t(j)/max(w_zero_counter(j)-1, w_nonzero_counter(j)-1);
@@ -68,6 +72,12 @@ function [simObj, mu_t, c_t, cov] = mixed_strategy(simObj, mu, c) % mu only give
                     cov(j,k) = (cov(j,k)*max(1, cov_counter(j,k)-1) + (diff(j)-mu_t(j,1))*(diff(k)-mu_t(k,1)))/max(1,cov_counter(j,k));
                     cov_counter(j,k) = cov_counter(j,k)+1;
                 end
+            end
+        end
+        
+        for j=1:simObj.d
+            for k=1:simObj.d
+                cor(j,k) = cov(j,k)/sqrt(cov(j,j)*cov(k,k));
             end
         end
         
