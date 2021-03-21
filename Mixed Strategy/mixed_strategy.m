@@ -57,8 +57,8 @@ function [simObj, mu_t, c_t, cov, cor] = mixed_strategy(simObj, mu, c) % mu only
                 mu_t(j,2) = mu_t(j,2) + 1;
                 mu_t(j,1) = mu_t(j,1) / mu_t(j,2);
             end
-            if w_zero_counter(j)-1 ~= 0 && w_nonzero_counter(j)-1 ~= 0
-                for k=1:min(w_zero_counter(j)-1, w_nonzero_counter(j)-1)
+            if w_nonzero_counter(j)-1 ~= 0
+                for k=1:(w_nonzero_counter(j)-1)
                     c_t(j) = c_t(j) + (s_w_delta_nonzero(j,k)-mu_t(j,1))/(sign(w_w_delta_nonzero(j,k)*sqrt(abs(w_w_delta_nonzero(j,k)))));
                     %c_t(j) = c_t(j) + (s_w_delta_zero(j,mod(k, w_zero_counter(j)-1)+1)-s_w_delta_nonzero(j,mod(k, w_nonzero_counter(j)-1)+1))/(sign(w_w_delta_nonzero(j,mod(k, w_nonzero_counter(j)-1)+1))*sqrt(abs(w_w_delta_nonzero(j,mod(k, w_nonzero_counter(j)-1)+1))));
                 end
