@@ -1,4 +1,4 @@
-function [simObj, mu_t, c_t, cov, cor] = real_strategy(simObj, mu, c) % mu only given to compare approximation to exact value.
+function [simObj, mu_t, c_t, cov, cor] = real_strategy(simObj) % mu only given to compare approximation to exact value.
     w_const = ones(simObj.d,1)/simObj.d; % Only really important thing is that it remains constant.
     simObj = simObj.reset(); % reset simulation environment
     s_w_delta_nonzero = zeros(simObj.d, simObj.T); %delta s for delta w not equal zero
@@ -114,9 +114,5 @@ function [simObj, mu_t, c_t, cov, cor] = real_strategy(simObj, mu, c) % mu only 
                 cor(j,k) = cov(j,k)/sqrt(cov(j,j)*cov(k,k));
             end
         end
-        
-        % Compare to exact mu.
-        %norm(mu - mu_t(:,1))
-        %norm(c-c_t)
     end
 end
