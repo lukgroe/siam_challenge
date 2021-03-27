@@ -1,6 +1,7 @@
 function [simObj, mu_t, c_t, cov, cor] = mixed_strategy2(simObj, lambda)
     d = simObj.d;
     T = simObj.T;
+    eta = simObj.eta;
     w_next = zeros(d,1);
     w = min(floor(1+3*lambda),1/d);
     while sum(w_next)<1-w % Random initial strategy; equal weights over floor(1+3*lambda) random shares
@@ -19,7 +20,7 @@ function [simObj, mu_t, c_t, cov, cor] = mixed_strategy2(simObj, lambda)
     % Simulate.
     for i=1:T
         
-        if i<min(T/4, lambda*200) || mod(i,10) ~= 0
+        if i<min(T/4, lambda*200) || mod(i,max(50000*eta, 30)) ~= 0
             simObj = simObj.step(w_next);
         else
             
