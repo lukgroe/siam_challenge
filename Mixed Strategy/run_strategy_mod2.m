@@ -27,7 +27,7 @@ sim_obj = MarketSimulator(T,s0,model_params);
 %sim_obj = simulation_strategy(sim_obj, mu, c, M);
 %sim_obj = parameter_estimation_strategy(sim_obj, mu);
 %sim_obj = mcts(sim_obj, mu, c);
-[sim_obj, mu_t, c_t, cov, cor] = mixed_strategy2(sim_obj, .1);
+[sim_obj, mu_t, c_t, cov, cor] = final_strategy2(sim_obj, .6);
 
 % Plot simulated price history
 figure(1);
@@ -58,7 +58,7 @@ title('Portfolio Cumulative Growth')
 
 
 %% Computing the Target Objective for a Strategy
-return; %stops the skript
+%return; %stops the skript
 
 nsims = 500;
 lambda = 0.25;
@@ -66,7 +66,7 @@ cumret_array = zeros(nsims,1);
 
 for k=1:nsims
     % Store each simulation's result in array
-    sim_obj = mixed_strategy2(sim_obj,lambda);
+    sim_obj = final_strategy(sim_obj,lambda);
     cumret_array(k) = sim_obj.R_hist(end);
 end
 
