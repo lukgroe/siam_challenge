@@ -1,31 +1,35 @@
-function [simObj, mu_t, c_t, cov, cor] = final_strategy2(simObj, lambda)
+function simObj = final_strategy2(simObj, lambda)
     d = simObj.d;
     T = simObj.T;
     eta = simObj.eta;
-    w_next = zeros(d,1); % Weights for the next step
-    w = min(floor(1+3*lambda),1/d);
-    simObj = simObj.reset(); % reset simulation environment
-    mu_t = zeros(d, 2); % [mu approximation, number of data points used]
-    c_t = zeros(d, 1); % Estimator for c
-    cov = zeros(d, d); % Estimator for covariance
-    cov_counter = zeros(d, d); % Counter of number of data points considered in cov
-    cor = zeros(d, d); % Estimator for correlation matrix
+    
+    w_next = zeros(d,1);            % Weights for the next step
+    
+    % Initialization of first weight vector.
+    w = min(floor(1+3*lambda),1/d); 
+    while sum(w_next)<1-w           % Random strategy; equal weights over floor(1+3*lambda) random shares
+        w_next(randi([1,d])) = w;
+    end
+    
+    simObj = simObj.reset();        % reset simulation environment
+    mu_t = zeros(d,2);              % [mu approximation, number of data points used]
+    cov = zeros(d,d);               % Estimator for covariance
+    cov_counter = zeros(d,d);       % Counter of number of data points considered in cov
+    cor = zeros(d,d);               % Estimator for correlation matrix
     
     % Simulate.
     for i=1:T
         
+        % Differentiate between initial strategy and later strategy.
         if i<min(T/4, lambda*200) || mod(i,max(50000*eta, 30)) ~= 0
             simObj = simObj.step(w_next);
         else
             
-            c_t = zeros(d, 1);
             for j=1:d
                 for k=1:d % Calculation of correlation from covariance
                     cor(j,k) = cov(j,k)/sqrt(cov(j,j)*cov(k,k));
                 end
             end
-            
-            
             
             goodPairs = cor <= zeros(simObj.d, simObj.d); % Returns logical matrix where (i,j)-th entry is 1 iff Cor(i,j) <= 0. 
             w_next = zeros(d,1);
@@ -43,12 +47,18 @@ function [simObj, mu_t, c_t, cov, cor] = final_strategy2(simObj, lambda)
                         end
                     end
                 end
-                if maxInd(1) == 0 % If all shares are positively correlated
-                    while sum(w_next)<1-w % Random strategy; equal weights over floor(1+3*lambda) random shares
-                        w_next(randi([1,d])) = w;
-                    end
+                if maxInd(1) == 0 
+                    % Check if all shares are positively correlated.
+                    if j == 1 
+                        % If so, leave strategy unchanged.
+                        simObj = simObj.step(simObj.w_cur);
+                    else 
+                        % Otherwise just use the already picked pairs.
+                        simObj = simObj.step(simObj.w_next);
+                    end 
                     break
                 end
+                % Neutralize pair from being picked again.
                 goodPairs(:, maxInd(1)) = zeros(d, 1);
                 goodPairs(maxInd(1), :) = zeros(1, d);
                 goodPairs(:, maxInd(2)) = zeros(d, 1);
@@ -67,10 +77,8 @@ function [simObj, mu_t, c_t, cov, cor] = final_strategy2(simObj, lambda)
             w_delta = simObj.w_cur - simObj.w_hist(:,simObj.t-1);
         end
         
-            
         % Prepare data by looking at the differences.
         diff = log(simObj.s_cur) - log(simObj.s_hist(:,simObj.t));
-
         
         % Calculate current mu approximation from this round.
         for j = 1:(d)
