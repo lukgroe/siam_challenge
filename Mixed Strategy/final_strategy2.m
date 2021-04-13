@@ -23,7 +23,7 @@ function simObj = final_strategy2(simObj, lambda)
     for i=1:T
         
         % Differentiate between initial strategy and later strategy.
-        if i<min(T/4, lambda*200) || mod(i,max(50000*eta, 30)) ~= 0
+        if i<min(T/4, lambda*200) || mod(i,max(floor(50000*eta), 30)) ~= 0
             simObj = simObj.step(w_next);
         else
             
@@ -35,8 +35,10 @@ function simObj = final_strategy2(simObj, lambda)
             
             goodPairs = cor <= zeros(simObj.d, simObj.d); % Returns logical matrix where (i,j)-th entry is 1 iff Cor(i,j) <= 0. 
             w_next = zeros(d,1);
+            % Search for floor(1+3*lambda) pairs.
             for j=1:floor(1+3*lambda)
                 maxInd = zeros(2,1);
+                % Iterate over all pairs for a good pair.
                 for k = 1:simObj.d
                     for m = k:simObj.d
                         if goodPairs(k,m)
