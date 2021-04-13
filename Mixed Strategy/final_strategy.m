@@ -1,4 +1,4 @@
-function simObj = final_strategy2(simObj, lambda)
+function simObj = final_strategy(simObj, lambda)
     d = simObj.d;
     T = simObj.T;
     eta = simObj.eta;
