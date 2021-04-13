@@ -6,9 +6,11 @@ function simObj = final_strategy2(simObj, lambda)
     w_next = zeros(d,1);            % Weights for the next step
     
     % Initialization of first weight vector.
-    w = min(floor(1+3*lambda),1/d); 
-    while sum(w_next)<1-w           % Random strategy; equal weights over floor(1+3*lambda) random shares
-        w_next(randi([1,d])) = w;
+    K = min(floor(1+3*lambda),d); 
+    w = randperm(d);                % Get random permutation and choose the first K for assets.
+    w = w(1:K);
+    for i = 1:K
+        w_next(w(i)) = 1/K;
     end
     
     simObj = simObj.reset();        % reset simulation environment
